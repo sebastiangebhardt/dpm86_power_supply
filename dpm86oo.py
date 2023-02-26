@@ -49,16 +49,6 @@ write="w"
 ok=0
 error=1
 
-# parameter for dpm functions (just for a better reading) -- SHOULD BE MOVED TO THE CLASS DEFINITION
-	
-			# function "f_output"
-p_off="0"		# parameter "off"
-p_on="1"		# parameter "on"
-
-			# function "f_const"
-p_voltage="0"		# parameter "voltage"
-p_current="1"		# parameter "current"
-
 #----- class definition
 
 class dpm86(serial.Serial):
@@ -78,6 +68,13 @@ class dpm86(serial.Serial):
 	VOLTAGE_MAX=60			# 60 Volt
 	CURRENT_MIN=0			#  0 Ampere
 	CURRENT_MAX=9			#  9 Ampere --> should be set automatically, depending on the type (maybe next release)
+	# parameter for dpm functions (just for a better reading)
+    # function "f_output"
+	P_OFF="0"		# parameter "off"
+	P_ON="1"		# parameter "on"
+	# function "f_const"
+	P_VOLTAGE="0"		# parameter "voltage"
+	P_CURRENT="1"		# parameter "current"
 	
 	def __init__(self, port=None, baudrate=9600, timeout=None, inter_byte_timeout=None):
 		super().__init__(
@@ -136,14 +133,14 @@ class dpm86(serial.Serial):
 	def output(self, state=None):
 	
 		if state == None: return(self.vread(self.F_OUTPUT))
-		elif state in [p_on, p_off]: return(self.vwrite(self.F_OUTPUT, state))
+		elif state in [self.P_ON, self.P_OFF]: return(self.vwrite(self.F_OUTPUT, state))
 		else: return("ERROR: Invalid parameter.")
 
 	# dpm86: const
 	def const(self, state=None):
 	
 		if state == None: return(self.vread(self.F_CONST))
-		elif state in [p_voltage, p_current]: return(self.vwrite(self.F_CONST, state))
+		elif state in [self.P_VOLTAGE, self.P_CURRENT]: return(self.vwrite(self.F_CONST, state))
 		else: return("ERROR: Invalid parameter.")
 
 	# dpm86: temperature
@@ -298,8 +295,8 @@ def cmd_temp():
 def cmd_output():
 
 	if len(sys.argv) == 2: print(dpm.output())			# output/o       -- read the actual output state (on/off)
-	elif sys.argv[2] in ['1', 'on']: print(dpm.output(p_on))	# output/o 1/on  -- turn the output on"
-	elif sys.argv[2] in ['0', 'off']: print(dpm.output(p_off))	# output/o 0/off -- turn the output off
+	elif sys.argv[2] in ['1', 'on']: print(dpm.output(dpm.P_ON))	# output/o 1/on  -- turn the output on"
+	elif sys.argv[2] in ['0', 'off']: print(dpm.output(dpm.P_OFF))	# output/o 0/off -- turn the output off
 	else:
 		print("")
 		print("Argument 'output': unknown parameter '" + sys.argv[2] + "'")
@@ -326,8 +323,8 @@ def cmd_power():
 def cmd_const():
 
 	if len(sys.argv) == 2: print(dpm.const())							# const/C                        -- read the actual const setting (const voltage/const current)
-	elif sys.argv[2] in ['voltage', 'volt', 'v']: print(dpm.const(p_voltage))			# const/C voltage/volt/v         -- set constant voltage delivery
-	elif sys.argv[2] in ['current', 'c', 'ampere', 'amp', 'a']: print(dpm.const(p_current))		# const/C current/c/ampere/amp/a -- set constant current delivery
+	elif sys.argv[2] in ['voltage', 'volt', 'v']: print(dpm.const(dpm.P_VOLTAGE))			# const/C voltage/volt/v         -- set constant voltage delivery
+	elif sys.argv[2] in ['current', 'c', 'ampere', 'amp', 'a']: print(dpm.const(dpm.P_CURRENT))		# const/C current/c/ampere/amp/a -- set constant current delivery
 	else:
 		print("")
 		print("Argument 'const': unknown parameter '" + sys.argv[2] + "'")
@@ -375,15 +372,15 @@ def init():
 		print("ERROR -- Device '" + tty + "' is not writable.")
 
 ### Main Code
-
-init()
-dpm = dpm86(
-        port = tty,
-        baudrate = 9600,
-        timeout=0.5, 
-        inter_byte_timeout=0.1
-)
-command_line_argument()
-dpm.close()
+if __name__ == '__main__':
+	init()
+	dpm = dpm86(
+			port = tty,
+			baudrate = 9600,
+			timeout=0.5, 
+			inter_byte_timeout=0.1
+	)
+	command_line_argument()
+	dpm.close()
 
 # this is the last line :)
