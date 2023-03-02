@@ -1,0 +1,13 @@
+[Unit]
+Description=webdpm service
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/webdpm/dpm86_power_supply
+Environment="PATH=/opt/webdpm/dpm86_power_supply"
+ExecStart=python3 -m uvicorn --port 5000 --host 0.0.0.0 webdpm:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
